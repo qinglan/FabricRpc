@@ -12,6 +12,10 @@ from conf import setting
 
 class Server(object):
     def __init__(self, qname):
+        '''
+        实例化服务端时应指定rpc队列
+        :param qname: 服务器IP即rpc队列名
+        '''
         conn = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
         self.channel = conn.channel()
         self.channel.queue_declare(queue=qname)
