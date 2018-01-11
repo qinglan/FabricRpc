@@ -33,6 +33,8 @@ class RpcManage(object):
         for t, v in self.task_info.items():
             print('任务Id:{0}'.format(t).center(30, '-'))
             print('主机IP:', v['IP'], '执行命令:', v['cmd'], '结果:', v['Result'])
+        else:
+            print('当前没有任务')
 
     def execmd(self):
         '''输入命令并调用run函数'''
@@ -41,7 +43,7 @@ class RpcManage(object):
         # 分解输入的内容,结果为:['run ', '"df -h"', '', None, ' 192.168.3.55 10.4.3.4']
         params = re.split('--hosts|(".*")\s+', text)
         print('分解命令结果:', params)
-        if hasattr(self, params[0]):
+        if hasattr(self, params[0].strip()):
             self.run(params[1].strip(), params[4].strip())
         else:
             print('输入有误:函数run不存在')
@@ -74,7 +76,7 @@ class RpcManage(object):
         print('FabricRPC主机管理'.center(30, '*'))
         self.rpcserver = input('请输入RPC服务器IP:').strip()
         while True:
-            for k, v in menu_text:
+            for k, v in menu_text.items():
                 print(k, v)
             choice = input('请选择菜单项[q=退出]:').strip()
             if choice == 'q': break

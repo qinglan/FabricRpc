@@ -24,11 +24,11 @@ class RpcServer(object):
         self.config = configparser.ConfigParser()  # 打开主机配置文件
         self.config.read(setting.DB_Path)
 
-    def exec(self, action):
+    def execmd(self, action):
         '''连接远程主机并执行命令'''
         cmd, ip = action.split()
         for section in self.config.sections():  # 遍历host.ini文件查找指定IP的账号、密码、端口
-            if ip in self.config.options(section):  # todo:待验证
+            if self.config.get(section, 'IP') == ip:
                 loginname = self.config[section]['UserName']
                 passwd = self.config[section]['Password']
                 port = int(self.config[section]['Port'])
@@ -40,7 +40,7 @@ class RpcServer(object):
                 # 执行命令
                 stdin, stdout, stderr = ssh.exec_command(cmd)
                 errmsg = stderr.read()
-                result = errmsg if not errmsg else stdout.read()  # todo 是否需求解码
+                result = errmsg if errmsg else stdout.read()  # todo 是否需求解码
                 ssh.close()
                 break
         else:
@@ -49,11 +49,12 @@ class RpcServer(object):
 
     def on_request(self, ch, method, props, body):
         '''回调函数'''
-        result = self.exec(body)
-        print('Execute Result:', result)
+        print('Received Data:', body)  # body解码
+        result = self.execmd(body.decode())
+        print('Execute Result:', result.decode())
         ch.basic_publish(exchange='', routing_key=props.reply_to,
                          properties=pika.BasicProperties(correlation_id=props.correlation_id),
-                         body=str(result))
+                         body=result)
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
     def __call__(self, *args, **kwargs):
