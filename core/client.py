@@ -8,7 +8,7 @@ import uuid
 import time
 
 
-class Client(object):
+class RpcClient(object):
     def __init__(self, serverip):
         '''
         实例化客户端时应该指定rpc服务器IP
@@ -25,7 +25,7 @@ class Client(object):
             self.response = body
             ch.basic_ack(delivery_tag=method.delivery_tag)  # 通知结束任务
 
-    def get_response(self, callback_queue, corr_id):
+    def get_response(self, corr_id, callback_queue):
         '''
         在客户端调用获取结果时才接收数据
         :param callback_queue: 回调的queue name
@@ -56,12 +56,12 @@ class Client(object):
                                                                    correlation_id=corr_id),
                                    body=args)  # todo:必需是字符串吗
         print('send data:', args)
-        return callback_queue, corr_id  # 返回调的queue name和corr_id
+        return corr_id, callback_queue  # 返回调的queue name和corr_id
 
 
 if __name__ == '__main__':
     serverIp = input('请输入RPC服务器IP:').strip()
     print('命令格式:ls 192.168.1.x')
     action = input('请输入执行的命令:').strip()
-    rpclient = Client(serverIp)
+    rpclient = RpcClient(serverIp)
     rpclient(action)

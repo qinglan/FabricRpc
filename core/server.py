@@ -10,7 +10,7 @@ import paramiko
 from conf import setting
 
 
-class Server(object):
+class RpcServer(object):
     def __init__(self, qname):
         '''
         实例化服务端时应指定rpc队列
@@ -65,5 +65,5 @@ if __name__ == '__main__':
     serverName = socket.gethostname()  # 获取主机名
     serverIp = socket.gethostbyname(serverName)  # 获取主机IP
     print('server name:', serverName, 'IP:', serverIp)
-    rpcserver = Server(serverIp)
+    rpcserver = RpcServer(serverIp)
     rpcserver()
