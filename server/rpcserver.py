@@ -11,22 +11,23 @@ from conf import setting
 
 
 class RpcServer(object):
-    def __init__(self, qname):
-        '''
-        实例化服务端时应指定rpc队列
-        :param qname: 服务器IP即rpc队列名
-        '''
+    def __init__(self):
+        '''实例化服务端时应指定rpc队列'''
+        serverName = socket.gethostname()  # 获取主机名
+        serverIp = socket.gethostbyname(serverName)  # 获取主机IP
+        print('server name:', serverName, 'IP:', serverIp)
+
         conn = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
         self.channel = conn.channel()
-        self.channel.queue_declare(queue=qname)
-        self.channel.basic_consume(self.on_request, queue=qname)
+        self.channel.queue_declare(queue=serverIp)  # 服务器IP即rpc队列名
+        self.channel.basic_consume(self.on_request, queue=serverIp)
 
         self.config = configparser.ConfigParser()  # 打开主机配置文件
         self.config.read(setting.DB_Path)
 
     def execmd(self, action):
         '''连接远程主机并执行命令'''
-        cmd, ip = action.split()
+        cmd, ip = action.split(',')
         for section in self.config.sections():  # 遍历host.ini文件查找指定IP的账号、密码、端口
             if self.config.get(section, 'IP') == ip:
                 loginname = self.config[section]['UserName']
@@ -40,7 +41,7 @@ class RpcServer(object):
                 # 执行命令
                 stdin, stdout, stderr = ssh.exec_command(cmd)
                 errmsg = stderr.read()
-                result = errmsg if errmsg else stdout.read()  # todo 是否需求解码
+                result = errmsg if errmsg else stdout.read()  # 客户端需要解码
                 ssh.close()
                 break
         else:
@@ -49,7 +50,7 @@ class RpcServer(object):
 
     def on_request(self, ch, method, props, body):
         '''回调函数'''
-        print('Received Data:', body)  # body解码
+        print('Received Command:', body)  # body解码
         result = self.execmd(body.decode())
         print('Execute Result:', result.decode())
         ch.basic_publish(exchange='', routing_key=props.reply_to,
@@ -63,8 +64,5 @@ class RpcServer(object):
 
 
 if __name__ == '__main__':
-    serverName = socket.gethostname()  # 获取主机名
-    serverIp = socket.gethostbyname(serverName)  # 获取主机IP
-    print('server name:', serverName, 'IP:', serverIp)
-    rpcserver = RpcServer(serverIp)
+    rpcserver = RpcServer()
     rpcserver()

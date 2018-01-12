@@ -51,21 +51,22 @@ class RpcClient(object):
         random_queue = self.channel.queue_declare(exclusive=False)  # 产生一个随机的queue
         callback_queue = random_queue.method.queue  # 获取随机的queue name
         corr_id = str(uuid.uuid4())  # 生成一个随机的标识id
-        message = ','.join(args)
+        message = ','.join(args)  # tuple转为字符串
         self.channel.basic_publish(exchange='', routing_key=self.rpc_queue,
                                    properties=pika.BasicProperties(reply_to=callback_queue,
                                                                    correlation_id=corr_id),
                                    body=message)  # 必需是字符串
-        print('send data:', message)
+        print('\033[31;1mSend data:\033[0m', message)
         return corr_id, callback_queue  # 返回调的queue name和corr_id
 
 
 if __name__ == '__main__':
     '测试入口'
     serverIp = input('请输入RPC服务器IP:').strip()
-    print('命令格式:ls 192.168.1.x')
+    print('命令格式:ls 192.168.1.x')  # 测试的时候这样写
     action = input('请输入执行的命令:').strip()
     rpclient = RpcClient(serverIp)
-    retval = rpclient(action.split())
-    result = rpclient.get_response(retval[0], retval[1])
+    cmd, ip = action.split()
+    uid, qname = rpclient(cmd, ip)  # 返回uuid和队列名
+    result = rpclient.get_response(uid, qname)
     print('执行结果:', result.decode())

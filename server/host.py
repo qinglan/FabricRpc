@@ -86,29 +86,33 @@ class Host(object):
         else:
             return True
 
+    def __call__(self, *args, **kwargs):
+        menu_text = {
+            '1': '主机列表',
+            '2': '添加主机',
+            '3': '修改主机',
+            '4': '删除主机'
+        }
+        menu_option = {
+            '1': self.list,
+            '2': self.create,
+            '3': self.modify,
+            '4': self.delhost
+        }
+        while True:
+            for k, v in menu_text.items():
+                print(k, v)
+            action = input('请选择菜单项[q-退出]:').strip()
+            if action == 'q': break
+            if action in menu_text:
+                func = menu_option[action]
+                func()
+                print('sep line'.center(33, '-'))
+            else:
+                print('输入有误:菜单项不存在')
+
 
 if __name__ == '__main__':
     h = Host()
-    menu_text = {
-        '1': '主机列表',
-        '2': '添加主机',
-        '3': '修改主机',
-        '4': '删除主机'
-    }
-    menu_option = {
-        '1': h.list,
-        '2': h.create,
-        '3': h.modify,
-        '4': h.delhost
-    }
-    while True:
-        for k, v in menu_text.items():
-            print(k, v)
-        action = input('请选择菜单项[q-退出]:').strip()
-        if action == 'q': break
-        if action in menu_text:
-            func = menu_option[action]
-            func()
-            print('sep line'.center(33,'-'))
-        else:
-            print('输入有误:菜单项不存在')
+    h()
+

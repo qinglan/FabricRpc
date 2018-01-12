@@ -1,5 +1,5 @@
-#!/usr/bin/evn python3
 # -*- coding:utf-8 -*-
+# !/usr/bin/env python3
 '''系统参数配置'''
 __author__ = 'zween'
 __mtime__ = '2018-1-4'
